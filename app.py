@@ -3,10 +3,9 @@ import psycopg
 
 app = Flask(__name__)
 
-# 🔹 Your PostgreSQL connection (replace if needed)
-conn = psycopg2.connect(
+conn = psycopg.connect(
     host="aws-1-eu-west-1.pooler.supabase.com",
-    database="postgres",
+    dbname="postgres",
     user="postgres.eockpjperqujlokwapdb",
     password="2odqA6x55vUTjDI2",
     port="5432"
@@ -28,7 +27,6 @@ def get_flag(index):
     url = get_flag_url(code)
     return jsonify({"url": url, "index": index, "code": code})
 
-# ✅ Save flag to DB
 @app.route("/save_flag", methods=["POST"])
 def save_flag():
     data = request.json
@@ -45,7 +43,6 @@ def save_flag():
 
     return jsonify({"message": "saved"})
 
-# ✅ Get all saved flags
 @app.route("/get_saved_flags")
 def get_saved_flags():
     cur = conn.cursor()
