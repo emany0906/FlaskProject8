@@ -1,13 +1,107 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>FlagsAPI</title>
+    <title>Flags App</title>
+
+    <style>
+        body {
+            font-family: Arial;
+            display: flex;
+        }
+
+        #left {
+            width: 60%;
+            text-align: center;
+        }
+
+        #right {
+            width: 40%;
+            border-left: 2px solid #ccc;
+            padding: 10px;
+        }
+
+        img {
+            margin: 10px;
+        }
+    </style>
 </head>
 <body>
-    <h1>FlagsAPI Example</h1>
 
-    <img src="https://flagsapi.com/BE/flat/64.png">
-    <img src="https://flagsapi.com/BE/shiny/64.png">
-    <img src="https://flagsapi.com/FR/flat/48.png">
+    <!-- LEFT SIDE -->
+    <div id="left">
+        <h1>Flag Viewer</h1>
+
+        <img id="flag" src="" width="250">
+
+        <br>
+
+        <button onclick="prevFlag()">Previous</button>
+        <button onclick="nextFlag()">Next</button>
+        <button onclick="saveFlag()">Save</button>
+    </div>
+
+    <!-- RIGHT SIDE -->
+    <div id="right">
+        <h2>Saved Flags</h2>
+        <div id="savedFlags"></div>
+    </div>
+
+    <script>
+        let currentIndex = 0;
+        let currentCode = "";
+
+        function updateFlag(index) {
+            fetch(`/get_flag/${index}`)
+                .then(res => res.json())
+                .then(data => {
+                    document.getElementById("flag").src = data.url;
+                    currentIndex = data.index;
+                    currentCode = data.code;
+                });
+        }
+
+        function nextFlag() {
+            updateFlag(currentIndex + 1);
+        }
+
+        function prevFlag() {
+            updateFlag(currentIndex - 1);
+        }
+
+        function saveFlag() {
+            fetch("/save_flag", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    code: currentCode,
+                    url: document.getElementById("flag").src
+                })
+            })
+            .then(() => loadSavedFlags());
+        }
+
+        function loadSavedFlags() {
+            fetch("/get_saved_flags")
+                .then(res => res.json())
+                .then(data => {
+                    const container = document.getElementById("savedFlags");
+                    container.innerHTML = "";
+
+                    data.forEach(flag => {
+                        const img = document.createElement("img");
+                        img.src = flag.url;
+                        img.width = 80;
+                        container.appendChild(img);
+                    });
+                });
+        }
+
+        // Load first flag + saved flags on start
+        updateFlag(0);
+        loadSavedFlags();
+    </script>
+
 </body>
 </html>
