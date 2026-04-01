@@ -1,5 +1,5 @@
 from flask import Flask, render_template, jsonify, request
-import psycopg2
+import psycopg
 
 app = Flask(__name__)
 
