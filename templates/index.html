@@ -339,9 +339,14 @@
                     url: document.getElementById("flag").src
                 })
             })
-            .then(() => {
-                loadSavedFlags();
-                showToast("Flag saved");
+            .then(res => res.json())
+            .then(data => {
+                if (data.message === "already_saved") {
+                    showToast("Already saved!");
+                } else {
+                    loadSavedFlags();
+                    showToast("Flag saved");
+                }
             });
         }
 

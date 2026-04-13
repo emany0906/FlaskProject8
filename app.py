@@ -55,6 +55,12 @@ def save_flag():
         url = data["url"]
         conn = get_conn()
         cur = conn.cursor()
+        cur.execute("SELECT code FROM flags WHERE code = %s", (code,))
+        existing = cur.fetchone()
+        if existing:
+            cur.close()
+            conn.close()
+            return jsonify({"message": "already_saved"}), 200
         cur.execute("INSERT INTO flags (code, url) VALUES (%s, %s)", (code, url))
         conn.commit()
         cur.close()
