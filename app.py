@@ -1,15 +1,14 @@
 from flask import Flask, render_template, jsonify, request
 import psycopg
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 app = Flask(__name__)
 
-conn = psycopg.connect(
-    host="aws-1-eu-west-1.pooler.supabase.com",
-    dbname="postgres",
-    user="postgres.eockpjperqujlokwapdb",
-    password="2odqA6x55vUTjDI2",
-    port="5432"
-)
+# Use DATABASE_URL from .env
+conn = psycopg.connect(os.getenv("DATABASE_URL"))
 
 flags = ["BE", "FR", "DE", "ES", "IT", "IE", "US", "JP"]
 
