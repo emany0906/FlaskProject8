@@ -52,6 +52,7 @@
             text-align: center;
         }
 
+
         .header h1 {
             font-family: 'Playfair Display', serif;
             font-size: 2rem;
@@ -377,10 +378,23 @@
                         const label = document.createElement("span");
                         label.textContent = flag.code;
 
+                        const deleteBtn = document.createElement("button");
+                        deleteBtn.textContent = "✕";
+                        deleteBtn.className = "btn";
+                        deleteBtn.style.cssText = "font-size:0.6rem; padding:3px 8px; margin-top:2px;";
+                        deleteBtn.onclick = () => {
+                            fetch("/delete_flag", {
+                                method: "DELETE",
+                                headers: { "Content-Type": "application/json" },
+                                body: JSON.stringify({ code: flag.code })
+                            }).then(() => loadSavedFlags());
+                        };
+
                         card.appendChild(img);
                         card.appendChild(label);
+                        card.appendChild(deleteBtn);
                         container.appendChild(card);
-                    });
+                    });;
                 });
         }
 
