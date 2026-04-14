@@ -52,7 +52,6 @@
             text-align: center;
         }
 
-
         .header h1 {
             font-family: 'Playfair Display', serif;
             font-size: 2rem;
@@ -76,7 +75,7 @@
         }
 
         .flag-frame {
-            background: #e8e6e0;
+            background: var(--surface);
             border: 1px solid var(--border);
             border-radius: 4px;
             padding: 24px;
@@ -124,6 +123,17 @@
             background: var(--bg);
             padding: 2px 8px;
             border-radius: 2px;
+        }
+
+        #flag-name {
+            position: absolute;
+            bottom: 28px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.75rem;
+            font-family: 'Playfair Display', serif;
+            color: var(--ink);
+            white-space: nowrap;
         }
 
         /* controls */
@@ -287,6 +297,7 @@
         <div class="flag-stage">
             <div class="flag-frame">
                 <img id="flag" src="" alt="Country flag">
+                <span id="flag-name"></span>
                 <span id="flag-code"></span>
             </div>
         </div>
@@ -324,6 +335,7 @@
                     currentIndex = data.index;
                     currentCode = data.code;
                     document.getElementById("flag-code").textContent = data.code;
+                    document.getElementById("flag-name").textContent = data.name;
                 });
         }
 
@@ -339,14 +351,9 @@
                     url: document.getElementById("flag").src
                 })
             })
-            .then(res => res.json())
-            .then(data => {
-                if (data.message === "already_saved") {
-                    showToast("Already saved!");
-                } else {
-                    loadSavedFlags();
-                    showToast("Flag saved");
-                }
+            .then(() => {
+                loadSavedFlags();
+                showToast("Flag saved");
             });
         }
 
@@ -383,23 +390,10 @@
                         const label = document.createElement("span");
                         label.textContent = flag.code;
 
-                        const deleteBtn = document.createElement("button");
-                        deleteBtn.textContent = "✕";
-                        deleteBtn.className = "btn";
-                        deleteBtn.style.cssText = "font-size:0.6rem; padding:3px 8px; margin-top:2px;";
-                        deleteBtn.onclick = () => {
-                            fetch("/delete_flag", {
-                                method: "DELETE",
-                                headers: { "Content-Type": "application/json" },
-                                body: JSON.stringify({ code: flag.code })
-                            }).then(() => loadSavedFlags());
-                        };
-
                         card.appendChild(img);
                         card.appendChild(label);
-                        card.appendChild(deleteBtn);
                         container.appendChild(card);
-                    });;
+                    });
                 });
         }
 
