@@ -53,6 +53,42 @@
       background: var(--border);
     }
 
+    /* continent dropdown */
+    .continent-filter {
+      position: absolute;
+      top: 24px;
+      left: 24px;
+    }
+
+    #continent-select {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.7rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--ink);
+      padding: 8px 14px;
+      border-radius: 3px;
+      cursor: pointer;
+      appearance: none;
+      -webkit-appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%238a8478'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 10px center;
+      padding-right: 28px;
+      transition: border-color 0.15s ease;
+    }
+
+    #continent-select:hover {
+      border-color: var(--ink);
+    }
+
+    #continent-select:focus {
+      outline: none;
+      border-color: var(--ink);
+    }
+
     .header {
       text-align: center;
     }
@@ -303,6 +339,19 @@
 <body>
 
   <div id="left">
+
+    <div class="continent-filter">
+      <select id="continent-select" onchange="filterByContinent()">
+        <option value="all">All Continents</option>
+        <option value="africa">Africa</option>
+        <option value="asia">Asia</option>
+        <option value="europe">Europe</option>
+        <option value="north-america">North America</option>
+        <option value="south-america">South America</option>
+        <option value="oceania">Oceania</option>
+      </select>
+    </div>
+
     <div class="header">
       <h1>Flag Viewer</h1>
       <p>World Flags Collection</p>
@@ -333,8 +382,69 @@
   <div id="toast">Saved</div>
 
   <script>
+    // ── Continent → country code mapping ──
+    const continentCodes = {
+      africa: [
+        "dz","ao","bj","bw","bf","bi","cm","cv","cf","td","km","cd","cg",
+        "ci","dj","eg","gq","er","et","ga","gm","gh","gn","gw","ke","ls",
+        "lr","ly","mg","mw","ml","mr","mu","ma","mz","na","ne","ng","rw",
+        "st","sn","sl","so","za","ss","sd","sz","tz","tg","tn","ug","zm","zw"
+      ],
+      asia: [
+        "af","am","az","bh","bd","bt","bn","kh","cn","ge","in","id","ir",
+        "iq","il","jp","jo","kz","kw","kg","la","lb","my","mv","mn","mm",
+        "np","kp","om","pk","ph","qa","sa","sg","kr","lk","sy","tw","tj",
+        "th","tl","tr","tm","ae","uz","vn","ye"
+      ],
+      europe: [
+        "al","ad","at","by","be","ba","bg","hr","cz","dk","ee","fi","fr",
+        "de","gr","hu","is","ie","it","xk","lv","li","lt","lu","mk","mt",
+        "md","mc","me","nl","no","pl","pt","ro","ru","sm","rs","sk","si",
+        "es","se","ch","ua","gb","va"
+      ],
+      "north-america": [
+        "ag","bs","bb","bz","ca","cr","cu","dm","do","sv","gd","gt","ht",
+        "hn","jm","mx","ni","pa","kn","lc","vc","tt","us"
+      ],
+      "south-america": [
+        "ar","bo","br","cl","co","ec","gy","py","pe","sr","uy","ve"
+      ],
+      oceania: [
+        "au","fj","ki","mh","fm","nr","nz","pw","pg","ws","sb","to","tv","vu"
+      ]
+    };
+
+    let filteredCodes = null; // null means "all"
+    let filteredIndex = 0;
+
+    // Original index-based state (used when no filter active)
     let currentIndex = 0;
     let currentCode = "";
+
+    function filterByContinent() {
+      const val = document.getElementById("continent-select").value;
+      if (val === "all") {
+        filteredCodes = null;
+        filteredIndex = 0;
+        updateFlag(0);
+      } else {
+        filteredCodes = continentCodes[val];
+        filteredIndex = 0;
+        showFiltered(0);
+      }
+    }
+
+    function showFiltered(idx) {
+      // Wrap around within the filtered list
+      filteredIndex = ((idx % filteredCodes.length) + filteredCodes.length) % filteredCodes.length;
+      const code = filteredCodes[filteredIndex];
+      const img = document.getElementById("flag");
+      img.classList.remove("loaded");
+      img.onload = () => img.classList.add("loaded");
+      img.src = `https://flagcdn.com/w320/${code.toLowerCase()}.png`;
+      currentCode = code;
+      document.getElementById("flag-code").textContent = code.toUpperCase();
+    }
 
     function updateFlag(index) {
       const img = document.getElementById("flag");
@@ -350,8 +460,21 @@
         });
     }
 
-    function nextFlag() { updateFlag(currentIndex + 1); }
-    function prevFlag() { updateFlag(currentIndex - 1); }
+    function nextFlag() {
+      if (filteredCodes) {
+        showFiltered(filteredIndex + 1);
+      } else {
+        updateFlag(currentIndex + 1);
+      }
+    }
+
+    function prevFlag() {
+      if (filteredCodes) {
+        showFiltered(filteredIndex - 1);
+      } else {
+        updateFlag(currentIndex - 1);
+      }
+    }
 
     function saveFlag() {
       fetch("/save_flag", {
