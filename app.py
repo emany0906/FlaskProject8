@@ -11,9 +11,10 @@ app = Flask(__name__)
 def load_all_flags():
     response = requests.get("https://flagcdn.com/en/codes.json")
     response.raise_for_status()
-    return list(response.json().keys())
+    data = response.json()
+    return list(data.keys()), data  # ← returns codes and names
 
-flags = load_all_flags()
+flags, flag_names = load_all_flags()  # ← unpack both
 
 def get_flag_url(code):
     return f"https://flagcdn.com/w320/{code.lower()}.png"
@@ -38,14 +39,16 @@ def test_db():
 def get_flag(index):
     code = flags[index % len(flags)]
     url = get_flag_url(code)
-    return jsonify({"url": url, "index": index, "code": code})
+    name = flag_names.get(code, code)  # ← get country name
+    return jsonify({"url": url, "index": index % len(flags), "code": code, "name": name})  # ← added name
 
 @app.route("/get_random_flag")
 def get_random_flag():
     code = random.choice(flags)
     url = get_flag_url(code)
     index = flags.index(code)
-    return jsonify({"url": url, "index": index, "code": code})
+    name = flag_names.get(code, code)  # ← get country name
+    return jsonify({"url": url, "index": index, "code": code, "name": name})  # ← added name
 
 @app.route("/save_flag", methods=["POST"])
 def save_flag():
